@@ -74,7 +74,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.UUID;
 
 
 import org.pentaho.di.trans.steps.pentahogooglesheets.PentahoGoogleSheetsPluginOutputMeta;
@@ -269,7 +269,8 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
     data = (PentahoGoogleSheetsPluginOutputData) sdi;
 	
 	Object[] row = getRow();
-    List<Object> r= new ArrayList<Object>();
+    List<Object> r;
+
 
 	
     if (first && row!=null) {
@@ -278,15 +279,20 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 		data.outputRowMeta=getInputRowMeta().clone();
 		meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);	
 		data.rows =  new ArrayList<List<Object>>();
+		data.rowsId =  new ArrayList<Object>();
 		if(meta.getAppend()){ //If append is checked we do not write the header
 		   logBasic("Appending lines so skipping the header");
 		   data.currentRow++;	
 		} else {
 			logBasic("Writing header");
 			r= new ArrayList<Object>();
+
 			for (int i = 0; i < data.outputRowMeta.size(); i++) {
 				ValueMetaInterface v = data.outputRowMeta.getValueMeta(i);
-				r.add(v.getName());			
+				r.add(v.getName());
+				if (v.getName().equals("__PowerAppsId__")){
+					data.idColIdx = i;
+				}
 			}
 			data.rows.add(r);
 			data.currentRow++;	
@@ -313,19 +319,42 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 								
 								if(!meta.getAppend()) //if Append is not checked we clear the sheet and we write content
 								{
-									//Clearing exsiting Sheet
-									Sheets.Spreadsheets.Values.Clear request = data.service.spreadsheets().values().clear(environmentSubstitute(meta.getSpreadsheetKey()), range, requestBody);
-									logBasic("Clearing Sheet:" +range +"in Spreadsheet :"+ environmentSubstitute(meta.getSpreadsheetKey()));
-									if(request!=null){
-									ClearValuesResponse response = request.execute();
-									} else logBasic("Nothing to clear");
+									//Clearing exsiting Sheet //don't clear
+//									Sheets.Spreadsheets.Values.Clear request = data.service.spreadsheets().values().clear(environmentSubstitute(meta.getSpreadsheetKey()), range, requestBody);
+//									logBasic("Clearing Sheet:" +range +"in Spreadsheet :"+ environmentSubstitute(meta.getSpreadsheetKey()));
+//									if(request!=null){
+//										ClearValuesResponse response = request.execute();
+//									} else logBasic("Nothing to clear");
 									//Writing Sheet
 									logBasic("Writing to Sheet");
-									ValueRange body = new ValueRange().setValues(data.rows);
-									String valueInputOption="USER_ENTERED";
-									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), range, body).setValueInputOption(valueInputOption).execute();								
-								
-								} else { //Appending if option is checked
+									List<List<Object>> values = new ArrayList<List<Object>>();
+									values.add(data.rowsId);
+									//clone data.rows on the id column only
+									ValueRange body = new ValueRange()
+											              .setValues(values)
+											              .setMajorDimension("COLUMNS");
+									String rangeId = environmentSubstitute(meta.getWorksheetId()).concat("!J2");//TODO change the data.idColIdx to letters
+									//remove the rest of the column and set the range to be only the id column
+									String valueInputOption="RAW";
+									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), rangeId, body).setValueInputOption(valueInputOption).execute();
+
+								}
+//								{
+//									//Clearing exsiting Sheet //don't clear
+//									Sheets.Spreadsheets.Values.Clear request = data.service.spreadsheets().values().clear(environmentSubstitute(meta.getSpreadsheetKey()), range, requestBody);
+//									logBasic("Clearing Sheet:" +range +"in Spreadsheet :"+ environmentSubstitute(meta.getSpreadsheetKey()));
+//									if(request!=null){
+//									ClearValuesResponse response = request.execute();
+//									} else logBasic("Nothing to clear");
+//									//Writing Sheet
+//									logBasic("Writing to Sheet");
+//									//clone data.rows on the id column only
+//									ValueRange body = new ValueRange().setValues(data.rows); //remove the rest of the column and set the range to be only the id column
+//									String valueInputOption="USER_ENTERED";
+//									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), range, body).setValueInputOption(valueInputOption).execute();
+//
+//								}
+								else { //Appending if option is checked
 
 									// How the input data should be interpreted.
 									String valueInputOption = "USER_ENTERED"; // TODO: Update placeholder value.
@@ -351,20 +380,34 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 					return false;
 				} else {
 					r= new ArrayList<Object>();
+
 					for (int i = 0; i < data.outputRowMeta.size(); i++) {
 						int length=row.length;
 						//logBasic("Row length:"+length+" VS rowMeta "+data.outputRowMeta.size()+" i="+i);
-
-						if(i<length && row[i]!=null)
-						{
-						r.add(row[i].toString());
+						
+						//check if the column is an id field and if it's blank, set the uuid value
+						if (i==data.idColIdx) {
+							Object valueCol = row[i];
+							final String uuid = UUID.randomUUID().toString(); //.replace("-", "");
+							if (valueCol == null||valueCol.toString().isEmpty()) {
+								data.rowsId.add(uuid);
+							}else{
+								data.rowsId.add(valueCol.toString());
+							}
 						}
-						else { r.add("");}
+						
+						if(i<length && row[i]!=null) 
+						{ 
+						   r.add(row[i].toString());
+
+						}
+						else {r.add("");} 
 					}
 					//logBasic("Adding row:"+Integer.toString(data.currentRow));
 
 					data.rows.add(r);
 					//logBasic("Added row:"+Integer.toString(data.currentRow));
+
 
 					putRow(data.outputRowMeta, row);
 					//logBasic("Puting row:"+Integer.toString(data.currentRow));

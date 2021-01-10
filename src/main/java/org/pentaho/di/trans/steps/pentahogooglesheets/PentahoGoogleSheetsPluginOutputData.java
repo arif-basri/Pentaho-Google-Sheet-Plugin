@@ -36,7 +36,9 @@ public class PentahoGoogleSheetsPluginOutputData extends BaseStepData implements
     public RowMetaInterface outputRowMeta;
 
     public List<List<Object>> rows;
+    public List<Object> rowsId;
     public int currentRow = 0;
+    public int idColIdx = -1;
 	
 	public PentahoGoogleSheetsPluginOutputData() {
 		super();
