@@ -412,13 +412,16 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 
 							if (valueCol == null||valueCol.toString().isEmpty()) {
 								data.rowsId.add(uuid);
+								r.add(uuid);
+								row[i] = uuid;
 							}else{
 								data.rowsId.add(valueCol.toString());
+								r.add(valueCol.toString());
 								//use this value to find the row and delete
 								//https://stackoverflow.com/questions/49161249/google-sheets-api-how-to-find-a-row-by-value-and-update-its-content
 							}
 						}
-						
+						else //if column is not id field but has data
 						if(i<length && row[i]!=null) 
 						{ 
 						   r.add(row[i].toString());
