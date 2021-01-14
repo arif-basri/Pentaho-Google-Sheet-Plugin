@@ -260,9 +260,24 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
         }
         return false;
     }
-   
 
-  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+	public String getExcelColumnName (int columnNumber)
+	{
+		int dividend = columnNumber;
+		int i;
+		String columnName = "";
+		int modulo;
+		while (dividend > 0)
+		{
+			modulo = (dividend - 1) % 26;
+			i = 65 + modulo;
+			columnName = new Character((char)i).toString() + columnName;
+			dividend = (int)((dividend - modulo) / 26);
+		}
+		return columnName;
+	}
+
+	public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
     
 	meta = (PentahoGoogleSheetsPluginOutputMeta) smi;
     data = (PentahoGoogleSheetsPluginOutputData) sdi;
@@ -336,7 +351,7 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 									ValueRange body = new ValueRange()
 											              .setValues(values)
 											              .setMajorDimension("COLUMNS");
-									String rangeId = environmentSubstitute(meta.getWorksheetId()).concat("!J2");//TODO change the data.idColIdx to letters
+									String rangeId = environmentSubstitute(meta.getWorksheetId()).concat("!").concat(getExcelColumnName(data.idColIdx+1)).concat("2"); //"!J2";
 									//https://stackoverflow.com/questions/181596/how-to-convert-a-column-number-e-g-127-into-an-excel-column-e-g-aa
 									//remove the rest of the column and set the range to be only the id column
 									String valueInputOption="RAW";
