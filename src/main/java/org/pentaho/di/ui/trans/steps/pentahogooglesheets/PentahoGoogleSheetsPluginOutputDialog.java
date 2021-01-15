@@ -72,6 +72,7 @@ import org.pentaho.di.core.variables.Variables;
 
 
 import javax.security.auth.x500.X500Principal;
+import javax.swing.*;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.security.KeyStore;
@@ -95,6 +96,9 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 	private TextVar shareDomain;
     private Button create;
 	private Button append;
+    private Button clearBeforeWrite;
+    private Button updateKeyField;
+
 	
     public PentahoGoogleSheetsPluginOutputDialog(Shell parent, Object in, TransMeta transMeta, String name) {
         super(parent, (BaseStepMeta) in, transMeta, name);
@@ -326,13 +330,63 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		fdAppend.left = new FormAttachment( middle, 0 );
 		fdAppend.right = new FormAttachment( 100, 0 );
 		append.setLayoutData( fdAppend );
-		
-		//Create New Sheet tick box label
+
+        //clearBeforeWrite tick box label
+        Label wlClearBeforeWrite=new Label( spreadsheetComposite, SWT.RIGHT );
+        wlClearBeforeWrite.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.ClearBeforeWrite.Label" ));
+        props.setLook( wlClearBeforeWrite );
+        FormData fdClearBeforeWrite = new FormData();
+        fdClearBeforeWrite.top = new FormAttachment( append, margin );
+        fdClearBeforeWrite.left = new FormAttachment( 0, 0 );
+        fdClearBeforeWrite.right = new FormAttachment( middle, -margin );
+        wlClearBeforeWrite.setLayoutData( fdClearBeforeWrite );
+
+        //clearBeforeWrite tick box button
+        clearBeforeWrite = new Button( spreadsheetComposite, SWT.CHECK );
+        props.setLook( clearBeforeWrite );
+        clearBeforeWrite.addSelectionListener(lsSa);
+        fdClearBeforeWrite = new FormData();
+        fdClearBeforeWrite.top = new FormAttachment( append, margin );
+        fdClearBeforeWrite.left = new FormAttachment( middle, 0 );
+        fdClearBeforeWrite.right = new FormAttachment( 100, 0 );
+        clearBeforeWrite.setLayoutData( fdClearBeforeWrite );
+
+        //keyFieldOnly tick box button
+//        append = new Button( spreadsheetComposite, SWT.CHECK );
+//        props.setLook( append );
+//        append.addSelectionListener(lsSa);
+//        fdAppend = new FormData();
+//        fdAppend.top = new FormAttachment( worksheetIdButton, margin );
+//        fdAppend.left = new FormAttachment( middle, 0 );
+//        fdAppend.right = new FormAttachment( 100, 0 );
+//        append.setLayoutData( fdAppend );
+
+        //Update Key Field tick box label
+        Label wlUpdateKeyField=new Label( spreadsheetComposite, SWT.RIGHT );
+        wlUpdateKeyField.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.UpdateKey.Label" ));
+        props.setLook( wlUpdateKeyField );
+        FormData fdUpdateKeyField = new FormData();
+        fdUpdateKeyField.top = new FormAttachment( clearBeforeWrite, margin );
+        fdUpdateKeyField.left = new FormAttachment( 0, 0 );
+        fdUpdateKeyField.right = new FormAttachment( middle, -margin );
+        wlUpdateKeyField.setLayoutData( fdUpdateKeyField );
+
+        //Update Key Field tick box button
+        updateKeyField = new Button( spreadsheetComposite, SWT.CHECK );
+        props.setLook( updateKeyField );
+        updateKeyField.addSelectionListener(lsSa);
+        fdUpdateKeyField = new FormData();
+        fdUpdateKeyField.top = new FormAttachment( clearBeforeWrite, margin );
+        fdUpdateKeyField.left = new FormAttachment( middle, 0 );
+        fdUpdateKeyField.right = new FormAttachment( 100, 0 );
+        updateKeyField.setLayoutData( fdUpdateKeyField );
+
+        //Create New Sheet tick box label
 		Label wlCreate=new Label( spreadsheetComposite, SWT.RIGHT );
 		wlCreate.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.Create.Label" ));
 		props.setLook( wlCreate );
 		FormData fdCreate = new FormData();
-		fdCreate.top = new FormAttachment( append, margin );
+		fdCreate.top = new FormAttachment( updateKeyField, margin );
 		fdCreate.left = new FormAttachment( 0, 0 );
 		fdCreate.right = new FormAttachment( middle, -margin );
 		wlCreate.setLayoutData( fdCreate );
@@ -342,7 +396,7 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		props.setLook( create );
 	    create.addSelectionListener(lsSa);
 		fdCreate = new FormData();
-		fdCreate.top = new FormAttachment( append, margin );
+		fdCreate.top = new FormAttachment( updateKeyField, margin );
 		fdCreate.left = new FormAttachment( middle, 0 );
 		fdCreate.right = new FormAttachment( 100, 0 );
 		create.setLayoutData( fdCreate );
@@ -604,6 +658,8 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		this.shareEmail.setText(meta.getShareEmail());
 		this.create.setSelection( meta.getCreate() );
 		this.append.setSelection( meta.getAppend() );
+		this.clearBeforeWrite.setSelection( meta.getClearBeforeWrite() );
+		this.updateKeyField.setSelection( meta.getUpdateKeyField());
 
         this.shareDomain.setText(meta.getShareDomain());
 		this.privateKeyStore.setText(meta.getJsonCredentialPath());
@@ -619,6 +675,8 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		meta.setShareEmail(this.shareEmail.getText());
 		meta.setCreate(this.create.getSelection());
 		meta.setAppend(this.append.getSelection());
+		meta.setClearBeforeWrite(this.clearBeforeWrite.getSelection());
+		meta.setUpdateKeyField(this.updateKeyField.getSelection());
         meta.setShareDomain(this.shareDomain.getText());
 
     }

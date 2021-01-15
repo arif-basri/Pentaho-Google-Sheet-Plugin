@@ -312,7 +312,7 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 			data.currentRow++;	
 		}
 		
-	} 
+	}
 	try {
 				//if last row is reached
 				if (row == null) { 
@@ -330,50 +330,25 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 								String scope=SheetsScopes.SPREADSHEETS;
 								data.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, PentahoGoogleSheetsPluginCredentials.getCredentialsJson(scope,environmentSubstitute(meta.getJsonCredentialPath()))).setApplicationName(APPLICATION_NAME).build();
 								
-								
-								if(!meta.getAppend()) //if Append is not checked we clear the sheet and we write content
-//								{
-//
-//									//Writing Sheet
-//									logBasic("Writing to Sheet");
-//									//clone data.rows on the id column only
-//									ValueRange body = new ValueRange().setValues(data.rows); //remove the rest of the column and set the range to be only the id column
-//									String valueInputOption="RAW";
-//									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), range, body).setValueInputOption(valueInputOption).execute();
-//
-//								}
-								{
+								//TODO Add switch for writing, update AppsID value, delete row based on AppsId
+								if(meta.getClearBeforeWrite()) //if Append is not checked we clear the sheet and we write content
+								{//clear and write
+									//Clearing existing Sheet
+									Sheets.Spreadsheets.Values.Clear request = data.service.spreadsheets().values().clear(environmentSubstitute(meta.getSpreadsheetKey()), range, requestBody);
+									logBasic("Clearing Sheet:" +range +"in Spreadsheet :"+ environmentSubstitute(meta.getSpreadsheetKey()));
+									if(request!=null){
+									ClearValuesResponse response = request.execute();
+									} else logBasic("Nothing to clear");
+
 									//Writing Sheet
 									logBasic("Writing to Sheet");
-									List<List<Object>> values = new ArrayList<List<Object>>();
-									values.add(data.rowsId);
-									//clone data.rows on the id column only
-									ValueRange body = new ValueRange()
-											              .setValues(values)
-											              .setMajorDimension("COLUMNS");
-									String rangeId = environmentSubstitute(meta.getWorksheetId()).concat("!").concat(getExcelColumnName(data.idColIdx+1)).concat("2"); //"!J2";
-									//https://stackoverflow.com/questions/181596/how-to-convert-a-column-number-e-g-127-into-an-excel-column-e-g-aa
-									//remove the rest of the column and set the range to be only the id column
-									String valueInputOption="RAW";
-									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), rangeId, body).setValueInputOption(valueInputOption).execute();
-
+									ValueRange body = new ValueRange().setValues(data.rows); //remove the rest of the column and set the range to be only the id column
+									String valueInputOption="USER_ENTERED";
+									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), range, body).setValueInputOption(valueInputOption).execute();
 								}
-//								{
-//									//Clearing exsiting Sheet //don't clear
-//									Sheets.Spreadsheets.Values.Clear request = data.service.spreadsheets().values().clear(environmentSubstitute(meta.getSpreadsheetKey()), range, requestBody);
-//									logBasic("Clearing Sheet:" +range +"in Spreadsheet :"+ environmentSubstitute(meta.getSpreadsheetKey()));
-//									if(request!=null){
-//									ClearValuesResponse response = request.execute();
-//									} else logBasic("Nothing to clear");
-//									//Writing Sheet
-//									logBasic("Writing to Sheet");
-//									//clone data.rows on the id column only
-//									ValueRange body = new ValueRange().setValues(data.rows); //remove the rest of the column and set the range to be only the id column
-//									String valueInputOption="USER_ENTERED";
-//									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), range, body).setValueInputOption(valueInputOption).execute();
-//
-//								}
-								else { //Appending if option is checked
+								else if(meta.getAppend())
+								{
+									//Appending if option is checked
 
 									// How the input data should be interpreted.
 									String valueInputOption = "USER_ENTERED"; // TODO: Update placeholder value.
@@ -389,6 +364,32 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 									request.setValueInputOption(valueInputOption);
 									request.setInsertDataOption(insertDataOption);
 									AppendValuesResponse response = request.execute();
+								}
+								else if(meta.getUpdateKeyField())
+								{//Update refID field only
+									//Writing Sheet
+									logBasic("Writing to Sheet");
+									List<List<Object>> values = new ArrayList<List<Object>>();
+									values.add(data.rowsId);
+									//clone data.rows on the id column only
+									ValueRange body = new ValueRange()
+											              .setValues(values)
+											              .setMajorDimension("COLUMNS");
+									String rangeId = environmentSubstitute(meta.getWorksheetId()).concat("!").concat(getExcelColumnName(data.idColIdx+1)).concat("2"); //"!J2";
+									//https://stackoverflow.com/questions/181596/how-to-convert-a-column-number-e-g-127-into-an-excel-column-e-g-aa
+									//remove the rest of the column and set the range to be only the id column
+									String valueInputOption="RAW";
+									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), rangeId, body).setValueInputOption(valueInputOption).execute();
+
+								}
+								else {//update without clearing
+
+									//Writing Sheet
+									logBasic("Writing to Sheet");
+									//clone data.rows on the id column only
+									ValueRange body = new ValueRange().setValues(data.rows); //
+									String valueInputOption="RAW";
+									UpdateValuesResponse result = data.service.spreadsheets().values().update(environmentSubstitute(meta.getSpreadsheetKey()), range, body).setValueInputOption(valueInputOption).execute();
 
 								}
 							} else 
@@ -411,11 +412,11 @@ public class PentahoGoogleSheetsPluginOutput extends BaseStep implements StepInt
 							final String uuid = UUID.randomUUID().toString(); //.replace("-", "");
 
 							if (valueCol == null||valueCol.toString().isEmpty()) {
-								data.rowsId.add(uuid);
+								data.rowsId.add(uuid); //used for writing the id to the sheet
 								r.add(uuid);
-								row[i] = uuid;
+								row[i] = uuid; //update the generated id into the input row to be passed to the next step
 							}else{
-								data.rowsId.add(valueCol.toString());
+								data.rowsId.add(valueCol.toString()); //since can't use null value to skip cell update, copy existing value and rewrite the id to the sheet
 								r.add(valueCol.toString());
 								//use this value to find the row and delete
 								//https://stackoverflow.com/questions/49161249/google-sheets-api-how-to-find-a-row-by-value-and-update-its-content
