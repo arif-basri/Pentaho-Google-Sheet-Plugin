@@ -1,4 +1,5 @@
 
+
   
 # Pentaho Google Spreadsheet Plugin (Google Sheet API V4 / Google Drive API V3)  
   
@@ -77,12 +78,18 @@ See mi-input-output transformations in the sample repository.
 ## Enhancements.  
 2021/01/16 - Arif- 
 ![enter image description here](https://raw.githubusercontent.com/arif-basri/Pentaho-Google-Sheet-Plugin/master/screenshots/PentahoGoogleSheetOutv2-Spreadsheet.png)
-Added 2 additional checkboxes
-* Clear sheet:
+Added 4 additional modes
+* **Clear sheet:**
 Clear the sheet's content before writing the output
 
-* Update Key Field:
+* **Update Key Field:**
 Update any blank cell in the field **\_\_PowerAppsId\_\_** with UUID value
 *_TODO:_* make the field name definable by user
+
+* **Delete row**
+Delete row based on field **\_\_PowerAppsId\_\_**  value as row key. 1 API request per row.
+
+* **BULK Delete row**
+Delete a set of continuous range of rows in single API request, based on field **\_\_PowerAppsId\_\_**  value as start row key and end row key
 
 > Written with [StackEdit](https://stackedit.io/).
