@@ -98,6 +98,8 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 	private Button append;
     private Button clearBeforeWrite;
     private Button updateKeyField;
+    private Button deleteRow;
+    private Button bulkDeleteRow;
 
 	
     public PentahoGoogleSheetsPluginOutputDialog(Shell parent, Object in, TransMeta transMeta, String name) {
@@ -351,16 +353,6 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
         fdClearBeforeWrite.right = new FormAttachment( 100, 0 );
         clearBeforeWrite.setLayoutData( fdClearBeforeWrite );
 
-        //keyFieldOnly tick box button
-//        append = new Button( spreadsheetComposite, SWT.CHECK );
-//        props.setLook( append );
-//        append.addSelectionListener(lsSa);
-//        fdAppend = new FormData();
-//        fdAppend.top = new FormAttachment( worksheetIdButton, margin );
-//        fdAppend.left = new FormAttachment( middle, 0 );
-//        fdAppend.right = new FormAttachment( 100, 0 );
-//        append.setLayoutData( fdAppend );
-
         //Update Key Field tick box label
         Label wlUpdateKeyField=new Label( spreadsheetComposite, SWT.RIGHT );
         wlUpdateKeyField.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.UpdateKey.Label" ));
@@ -381,12 +373,52 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
         fdUpdateKeyField.right = new FormAttachment( 100, 0 );
         updateKeyField.setLayoutData( fdUpdateKeyField );
 
+        //Delete row tick box label
+        Label wlDeleteRow=new Label( spreadsheetComposite, SWT.RIGHT );
+        wlDeleteRow.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.DeleteRow.Label" ));
+        props.setLook( wlDeleteRow );
+        FormData fdDeleteRow = new FormData();
+        fdDeleteRow.top = new FormAttachment( updateKeyField, margin );
+        fdDeleteRow.left = new FormAttachment( 0, 0 );
+        fdDeleteRow.right = new FormAttachment( middle, -margin );
+        wlDeleteRow.setLayoutData( fdDeleteRow );
+
+        //Delete row Field tick box button
+        deleteRow = new Button( spreadsheetComposite, SWT.CHECK );
+        props.setLook( deleteRow );
+        deleteRow.addSelectionListener(lsSa);
+        fdDeleteRow = new FormData();
+        fdDeleteRow.top = new FormAttachment( updateKeyField, margin );
+        fdDeleteRow.left = new FormAttachment( middle, 0 );
+        fdDeleteRow.right = new FormAttachment( 100, 0 );
+        deleteRow.setLayoutData( fdDeleteRow );
+
+        //Bulk Delete row tick box label
+        Label wlBulkDeleteRow=new Label( spreadsheetComposite, SWT.RIGHT );
+        wlBulkDeleteRow.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.BulkDeleteRow.Label" ));
+        props.setLook( wlBulkDeleteRow );
+        FormData fdBulkDeleteRow = new FormData();
+        fdBulkDeleteRow.top = new FormAttachment( deleteRow, margin );
+        fdBulkDeleteRow.left = new FormAttachment( 0, 0 );
+        fdBulkDeleteRow.right = new FormAttachment( middle, -margin );
+        wlBulkDeleteRow.setLayoutData( fdBulkDeleteRow );
+
+        //Bulk Delete row Field tick box button
+        bulkDeleteRow = new Button( spreadsheetComposite, SWT.CHECK );
+        props.setLook( bulkDeleteRow );
+        bulkDeleteRow.addSelectionListener(lsSa);
+        fdBulkDeleteRow = new FormData();
+        fdBulkDeleteRow.top = new FormAttachment( deleteRow, margin );
+        fdBulkDeleteRow.left = new FormAttachment( middle, 0 );
+        fdBulkDeleteRow.right = new FormAttachment( 100, 0 );
+        bulkDeleteRow.setLayoutData( fdBulkDeleteRow );
+
         //Create New Sheet tick box label
 		Label wlCreate=new Label( spreadsheetComposite, SWT.RIGHT );
 		wlCreate.setText(BaseMessages.getString(PKG, "PentahoGoogleSheetsPluginOutputDialog.Create.Label" ));
 		props.setLook( wlCreate );
 		FormData fdCreate = new FormData();
-		fdCreate.top = new FormAttachment( updateKeyField, margin );
+		fdCreate.top = new FormAttachment( bulkDeleteRow, margin );
 		fdCreate.left = new FormAttachment( 0, 0 );
 		fdCreate.right = new FormAttachment( middle, -margin );
 		wlCreate.setLayoutData( fdCreate );
@@ -396,7 +428,7 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		props.setLook( create );
 	    create.addSelectionListener(lsSa);
 		fdCreate = new FormData();
-		fdCreate.top = new FormAttachment( updateKeyField, margin );
+		fdCreate.top = new FormAttachment( bulkDeleteRow, margin );
 		fdCreate.left = new FormAttachment( middle, 0 );
 		fdCreate.right = new FormAttachment( 100, 0 );
 		create.setLayoutData( fdCreate );
@@ -660,7 +692,8 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		this.append.setSelection( meta.getAppend() );
 		this.clearBeforeWrite.setSelection( meta.getClearBeforeWrite() );
 		this.updateKeyField.setSelection( meta.getUpdateKeyField());
-
+        this.deleteRow.setSelection( meta.getDeleteRow());
+        this.bulkDeleteRow.setSelection( meta.getBulkDeleteRow());
         this.shareDomain.setText(meta.getShareDomain());
 		this.privateKeyStore.setText(meta.getJsonCredentialPath());
        
@@ -677,6 +710,8 @@ public class PentahoGoogleSheetsPluginOutputDialog extends BaseStepDialog implem
 		meta.setAppend(this.append.getSelection());
 		meta.setClearBeforeWrite(this.clearBeforeWrite.getSelection());
 		meta.setUpdateKeyField(this.updateKeyField.getSelection());
+		meta.setDeleteRow(this.deleteRow.getSelection());
+        meta.setBulkDeleteRow(this.bulkDeleteRow.getSelection());
         meta.setShareDomain(this.shareDomain.getText());
 
     }

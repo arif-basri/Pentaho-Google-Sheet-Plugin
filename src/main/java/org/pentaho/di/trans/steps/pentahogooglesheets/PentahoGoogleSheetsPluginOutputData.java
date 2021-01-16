@@ -39,6 +39,12 @@ public class PentahoGoogleSheetsPluginOutputData extends BaseStepData implements
     public List<Object> rowsId;
     public int currentRow = 0;
     public int idColIdx = -1;
+    public int hiddenSheetId = -1;
+    public int sourceSheetId = -1;
+    public String appIDColumn;
+    public String uUIDFirst;
+    public String uUIDLast;
+    public Boolean isStopBulkDelete = false;
 	
 	public PentahoGoogleSheetsPluginOutputData() {
 		super();

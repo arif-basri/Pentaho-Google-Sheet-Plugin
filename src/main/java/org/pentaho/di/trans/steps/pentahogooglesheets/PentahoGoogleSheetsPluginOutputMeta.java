@@ -109,6 +109,12 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
     @Injection( name = "UpdateKeyField", group = "SHEET" )
     private Boolean updateKeyField;
 
+    @Injection( name = "DeleteRow", group = "SHEET" )
+    private Boolean deleteRow;
+
+    @Injection( name = "BulkDeleteRow", group = "SHEET" )
+    private Boolean bulkDeleteRow;
+
     @Override
     public void setDefault() {   
         this.jsonCredentialPath = Const.getKettleDirectory() + "/client_secret.json";
@@ -120,6 +126,8 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
 		this.append=false;
 		this.clearBeforeWrite=false;
 		this.updateKeyField=false;
+		this.deleteRow=false;
+        this.bulkDeleteRow=false;
     }
 		
    /* public String getDialogClassName() {
@@ -190,6 +198,24 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
         return this.updateKeyField == null ? false : this.updateKeyField;
     }
 
+    public Boolean getDeleteRow() {
+        return this.deleteRow == null ? false : this.deleteRow;
+    }
+
+    public void setDeleteRow(Boolean deleteRow) {
+        this.deleteRow = deleteRow;
+    }
+
+    public Boolean getBulkDeleteRow() {
+        return this.bulkDeleteRow == null ? false : this.bulkDeleteRow;
+    }
+
+    public void setBulkDeleteRow(Boolean bulkDeleteRow) {
+        this.bulkDeleteRow = bulkDeleteRow;
+    }
+
+
+
     public String getWorksheetId() {
         return this.worksheetId == null ? "" : this.worksheetId;
     }
@@ -208,6 +234,8 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
 		retval.setAppend(this.append);
         retval.setClearBeforeWrite(this.clearBeforeWrite);
         retval.setUpdateKeyField(this.updateKeyField);
+        retval.setDeleteRow(this.deleteRow);
+        retval.setBulkDeleteRow(this.bulkDeleteRow);
 		retval.setShareEmail(this.shareEmail);
 	    retval.setShareDomain(this.shareDomain);
         return retval;
@@ -224,6 +252,8 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
             xml.append(XMLHandler.addTagValue( "APPEND", Boolean.toString(this.append)));
             xml.append(XMLHandler.addTagValue( "ClearBeforeWrite", Boolean.toString(this.clearBeforeWrite)));
             xml.append(XMLHandler.addTagValue( "UpdateKeyField", Boolean.toString(this.updateKeyField)));
+            xml.append(XMLHandler.addTagValue("DeleteRow", Boolean.toString(this.deleteRow)));
+            xml.append(XMLHandler.addTagValue("BulkDeleteRow", Boolean.toString(this.bulkDeleteRow)));
 			xml.append(XMLHandler.addTagValue("SHAREEMAIL", this.shareEmail));	
             xml.append(XMLHandler.addTagValue("SHAREDOMAIN", this.shareDomain));
         } catch (Exception e) {
@@ -242,6 +272,8 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
 			this.append= Boolean.parseBoolean( XMLHandler.getTagValue( stepnode,"APPEND" ));
 			this.clearBeforeWrite= Boolean.parseBoolean( XMLHandler.getTagValue( stepnode, "ClearBeforeWrite"));
 			this.updateKeyField= Boolean.parseBoolean( XMLHandler.getTagValue( stepnode, "UpdateKeyField"));
+			this.deleteRow= Boolean.parseBoolean( XMLHandler.getTagValue(stepnode, "DeleteRow"));
+            this.bulkDeleteRow= Boolean.parseBoolean( XMLHandler.getTagValue(stepnode, "BulkDeleteRow"));
 			this.shareEmail= XMLHandler.getTagValue(stepnode,"SHAREEMAIL" );
             this.shareDomain= XMLHandler.getTagValue(stepnode,"SHAREDOMAIN" );
 
@@ -263,6 +295,8 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
 			this.append=Boolean.parseBoolean( rep.getStepAttributeString( id_step, "APPEND" ));
 			this.clearBeforeWrite= Boolean.parseBoolean( rep.getStepAttributeString(id_step, "ClearBeforeWrite"));
 			this.updateKeyField= Boolean.parseBoolean( rep.getStepAttributeString(id_step, "UpdateKeyField"));
+			this.deleteRow= Boolean.parseBoolean( rep.getStepAttributeString(id_step,"DeleteRow"));
+            this.bulkDeleteRow= Boolean.parseBoolean( rep.getStepAttributeString(id_step,"BulkDeleteRow"));
 
        
         } catch (Exception e) {
@@ -294,6 +328,13 @@ public class PentahoGoogleSheetsPluginOutputMeta extends BaseStepMeta implements
 			if (this.updateKeyField != null) {
 			    rep.saveStepAttribute(id_transformation, id_step, "UpdateKeyField",this.updateKeyField);
             }
+			if (this.deleteRow != null) {
+			    rep.saveStepAttribute(id_transformation, id_step, "DeleteRow", this.deleteRow);
+            }
+            if (this.bulkDeleteRow != null) {
+                rep.saveStepAttribute(id_transformation, id_step, "BulkDeleteRow", this.bulkDeleteRow);
+            }
+
         } catch (Exception e) {
             throw new KettleException("Unable to save step information to the repository for id_step=" + id_step, e);
         }
